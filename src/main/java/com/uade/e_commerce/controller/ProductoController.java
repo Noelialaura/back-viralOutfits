@@ -2,7 +2,9 @@ package com.uade.e_commerce.controller;
 
 import java.util.List;
 
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,4 +37,21 @@ public class ProductoController {
     public Producto crearProducto(@RequestBody Producto producto) {
         return productoService.crearProducto(producto);
     }
+
+    //Endpoint 3 : obtener un producto segun id
+    // get http://localhost:8080/api/productos/1
+    @GetMapping("/{id}")
+    public Producto getProductoById(@PathVariable long id) {
+        return productoService.getProducto(id);
+    }
+
+    // Endpoint 4 : eliminar un producto segun id
+    //delete http://localhost:8080/api/productos/1
+    @DeleteMapping("/{id}")
+    public void eliminarProducto(@PathVariable Long id) {
+    productoService.eliminarProducto(id);
+    }
+
+
+
 }

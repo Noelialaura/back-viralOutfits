@@ -28,4 +28,13 @@ public class ProductoService {
         // metodo save implementado en crudRepository (solo lo llamamos y lo usamos)
         return productoRepository.save(producto);
     }   
+
+    public Producto getProducto(long id) {
+        // select * from productos where id = id
+        return productoRepository.getReferenceById(id);
+    }
+
+    public void eliminarProducto(long id) {
+        productoRepository.deleteById(id);
+    }
 }
