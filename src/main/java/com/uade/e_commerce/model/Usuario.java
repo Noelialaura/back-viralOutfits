@@ -1,30 +1,27 @@
 package com.uade.e_commerce.model;
-import java.util.ArrayList;
-import java.util.List;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "Producto")
-public class Producto {
+@Table(name = "Usuario")
+public class Usuario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private long id;
     private String nombre;
-    private String descripcion;
-    private Double precio;
-    private String marca;
-    private Categoria categoria;
-    private List<VarianteProducto> varianteProducto = new ArrayList<>();
-
-    
+    private String apellido;
+    private String email;
+    private String contrasena;
+    private RolUsuario rol;
 }

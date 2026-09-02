@@ -1,6 +1,5 @@
 package com.uade.e_commerce.model;
-import java.util.ArrayList;
-import java.util.List;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -10,21 +9,16 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
+@Entity@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
-@Table(name = "Producto")
-public class Producto {
+@Table (name = "VarianteProducto")
+public class VarianteProducto {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String nombre;
-    private String descripcion;
-    private Double precio;
-    private String marca;
-    private Categoria categoria;
-    private List<VarianteProducto> varianteProducto = new ArrayList<>();
-
-    
+    private String talle;
+    private String color;
+    private int stock;
+    private Producto producto;
 }

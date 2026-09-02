@@ -27,12 +27,14 @@ public class ProductoController {
     }
 
     // Endpoint 1 : Obtener el catálogo de ropa 
+    // http://localhost:8080/api/productos
     @GetMapping()
     public List<Producto> getAllProductos() {
         return productoService.getAllProductos();
     }
 
     // Endpoint 2 : Registrar/cargar nueva prenda 
+    // http://localhost:8080/api/productos
     @PostMapping
     public Producto crearProducto(@RequestBody Producto producto) {
         return productoService.crearProducto(producto);
