@@ -5,8 +5,12 @@ import java.util.List;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.EnumType;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -24,6 +28,8 @@ public class Pedido {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @ManyToOne 
+    @JoinColumn (name = "usuario_id")
     private Usuario usuario;
     private LocalDateTime fecha;
     private double total;
@@ -31,5 +37,7 @@ public class Pedido {
     private String direccionEnvio;
     @Enumerated(EnumType.STRING)
     private EstadoPedido estadoPedido;
-    private List<PedidoItem> PedidoItems = new ArrayList<>();
+    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL)
+    private List<PedidoItem> pedidoItems = new ArrayList<>();
 }
+
