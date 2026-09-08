@@ -23,7 +23,7 @@ import lombok.ToString;
 public class PedidoItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pedido_id")
@@ -37,4 +37,8 @@ public class PedidoItem {
 
     private int cantidad;
     private double precioUnitario;
+    private double subtotal;
+    private String nombreProducto;
+    private String colorVariante;
+    private String tallaVariante;
 }
