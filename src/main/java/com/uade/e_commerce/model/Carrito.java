@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -33,7 +32,11 @@ public class Carrito {
     private Usuario usuario;
 
     private LocalDateTime fechaCreacion;
-    @OneToMany(mappedBy = "carrito", cascade = CascadeType.ALL)
+    // orphanRemoval: sin esto, sacar un item de la lista no borraba la fila, asi que
+    // eliminarItem() y vaciarCarrito() no tenian efecto real en la base.
+    @OneToMany(mappedBy = "carrito", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private List<CarritoItem> carritoItems = new ArrayList<>();
     
 }

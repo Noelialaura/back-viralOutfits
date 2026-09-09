@@ -3,7 +3,6 @@ package com.uade.e_commerce.model;
 import java.util.ArrayList;
 import java.util.List;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -31,6 +30,8 @@ public class VarianteProducto {
     @ManyToOne
     private Producto producto;
     @OneToMany(mappedBy = "productoVariante")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private List<PedidoItem> pedidoItems = new ArrayList<>();
 }
     

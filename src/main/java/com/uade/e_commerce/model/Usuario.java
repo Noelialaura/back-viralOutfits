@@ -9,7 +9,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
@@ -17,16 +19,19 @@ import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Collection;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
+
+/**
+ * Entidad de dominio pura. La adaptacion a Spring Security vive en
+ * {@code com.uade.e_commerce.security.UsuarioDetails}, que es lo que usa
+ * CustomUserDetailsService: antes esta clase tambien implementaba UserDetails y
+ * quedaban dos implementaciones distintas del mismo contrato.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "Usuario")
-public class Usuario implements UserDetails {
+public class Usuario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -41,35 +46,16 @@ public class Usuario implements UserDetails {
     private RolUsuario rol;
     @Enumerated(EnumType.STRING)
     private Genero genero;
+
+    // Excluidos de toString/equals: Carrito y Pedido apuntan de vuelta a Usuario y las
+    // dos clases usan @Data, asi que la recursion terminaba en StackOverflowError.
     @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Carrito carrito;
-    @OneToMany (mappedBy = "usuario")
+
+    @OneToMany(mappedBy = "usuario")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private List<Pedido> pedidos = new ArrayList<>();
-    
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + (rol != null ? rol.name() : "USER")));
-    }
-
-    @Override
-    public String getPassword() {
-        return contrasena;
-    }
-
-    @Override
-    public String getUsername() {
-        return email;
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    
 }

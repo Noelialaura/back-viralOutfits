@@ -7,7 +7,10 @@ import com.uade.e_commerce.exception.ResourceNotFoundException;
 import com.uade.e_commerce.model.Usuario;
 import com.uade.e_commerce.repository.UsuarioRepository;
 
+import jakarta.transaction.Transactional;
+
 @Service
+@Transactional
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;

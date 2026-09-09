@@ -14,16 +14,22 @@ import com.uade.e_commerce.exception.InvalidCredentialsException;
 import com.uade.e_commerce.model.RolUsuario;
 import com.uade.e_commerce.model.Usuario;
 import com.uade.e_commerce.repository.UsuarioRepository;
+import com.uade.e_commerce.security.JwtService;
+
+import jakarta.transaction.Transactional;
 
 @Service
+@Transactional
 public class AuthService {
 
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder contrasenaEncoder;
+    private final JwtService jwtService;
 
-    public AuthService(UsuarioRepository usuarioRepository,PasswordEncoder contrasenaEncoder) {
+    public AuthService(UsuarioRepository usuarioRepository, PasswordEncoder contrasenaEncoder, JwtService jwtService) {
         this.usuarioRepository = usuarioRepository;
         this.contrasenaEncoder = contrasenaEncoder;
+        this.jwtService = jwtService;
     }
 
     public UsuarioResponseDTO registrar(UsuarioRequestDTO dto) {
@@ -32,7 +38,9 @@ public class AuthService {
             throw new ArgumentInvalidException("El email ya se encuentra registrado");
         }
 
-        if (dto.getFechaNacimiento().isAfter(LocalDate.now())) {
+        // El DTO no valida la fecha, asi que si el JSON no la trae hay que cortar antes de
+        // llamar a isAfter() o el registro revienta con NullPointerException (500).
+        if (dto.getFechaNacimiento() != null && dto.getFechaNacimiento().isAfter(LocalDate.now())) {
             throw new ArgumentInvalidException("La fecha de nacimiento no puede ser futura");
         }
 
@@ -61,7 +69,9 @@ public class AuthService {
             throw new InvalidCredentialsException("Email o contraseña incorrectos");
         }
 
-        return new LoginResponseDTO("Login exitoso",convertirAResponseDTO(usuario));
+        String token = jwtService.generarToken(usuario.getId(), usuario.getEmail(), usuario.getRol());
+
+        return new LoginResponseDTO("Login exitoso", token, convertirAResponseDTO(usuario));
     }
 
     private UsuarioResponseDTO convertirAResponseDTO(Usuario usuario) {
