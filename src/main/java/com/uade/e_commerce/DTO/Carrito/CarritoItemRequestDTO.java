@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CarritoRequestDTO {
+public class CarritoItemRequestDTO {
 
     @NotNull(message = "El id de la variante del producto es obligatorio")
     private Long varianteProductoId;

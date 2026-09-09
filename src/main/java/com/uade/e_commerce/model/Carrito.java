@@ -4,8 +4,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import jakarta.persistence.CascadeType;
-
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -15,7 +15,9 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Data
 @NoArgsConstructor
@@ -29,6 +31,7 @@ public class Carrito {
     @OneToOne 
     @JoinColumn (name = "usuario_id", unique = true)
     private Usuario usuario;
+
     private LocalDateTime fechaCreacion;
     @OneToMany(mappedBy = "carrito", cascade = CascadeType.ALL)
     private List<CarritoItem> items = new ArrayList<>();
