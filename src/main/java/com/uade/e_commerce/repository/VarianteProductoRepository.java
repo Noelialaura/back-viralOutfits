@@ -1,5 +1,12 @@
 package com.uade.e_commerce.repository;
 
-public class VarianteProductoRepository {
-    
+import java.util.List;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.uade.e_commerce.model.VarianteProducto;
+
+public interface VarianteProductoRepository extends JpaRepository<VarianteProducto, Long> {
+    List<VarianteProducto> findByProductoId(Long productoId);
 }
+

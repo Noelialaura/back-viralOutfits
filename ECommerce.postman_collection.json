@@ -1,0 +1,217 @@
+{
+  "info": {
+    "_postman_id": "b6e1a2d4-2f3a-4c1e-9a2f-7c1e2d3f4a5b",
+    "name": "E-Commerce API - Productos",
+    "description": "Coleccion para probar manualmente Categoria, Producto y VarianteProducto.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080/api", "type": "string" },
+    { "key": "categoriaId", "value": "", "type": "string" },
+    { "key": "productoId", "value": "", "type": "string" },
+    { "key": "varianteId", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Categorias",
+      "item": [
+        {
+          "name": "Crear Categoria",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var json = pm.response.json();",
+                  "    pm.collectionVariables.set('categoriaId', json.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Remeras\",\n  \"descripcion\": \"Remeras de algodon\"\n}"
+            },
+            "url": "{{baseUrl}}/categorias"
+          },
+          "response": []
+        },
+        {
+          "name": "Listar Categorias",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/categorias"
+          },
+          "response": []
+        },
+        {
+          "name": "Obtener Categoria por Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/categorias/{{categoriaId}}"
+          },
+          "response": []
+        },
+        {
+          "name": "Eliminar Categoria",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/categorias/{{categoriaId}}"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Productos",
+      "item": [
+        {
+          "name": "Crear Producto",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var json = pm.response.json();",
+                  "    pm.collectionVariables.set('productoId', json.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Remera basica\",\n  \"descripcion\": \"100% algodon\",\n  \"precio\": 9999.5,\n  \"marca\": \"UADE Wear\",\n  \"categoriaId\": {{categoriaId}}\n}"
+            },
+            "url": "{{baseUrl}}/productos"
+          },
+          "response": []
+        },
+        {
+          "name": "Listar Productos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/productos"
+          },
+          "response": []
+        },
+        {
+          "name": "Obtener Producto por Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/productos/{{productoId}}"
+          },
+          "response": []
+        },
+        {
+          "name": "Eliminar Producto",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/productos/{{productoId}}"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Variantes de Producto",
+      "item": [
+        {
+          "name": "Agregar Variante",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var json = pm.response.json();",
+                  "    pm.collectionVariables.set('varianteId', json.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"talle\": \"M\",\n  \"color\": \"Negro\",\n  \"stock\": 15\n}"
+            },
+            "url": "{{baseUrl}}/productos/{{productoId}}/variantes"
+          },
+          "response": []
+        },
+        {
+          "name": "Listar Variantes de un Producto",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/productos/{{productoId}}/variantes"
+          },
+          "response": []
+        },
+        {
+          "name": "Eliminar Variante",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/productos/{{productoId}}/variantes/{{varianteId}}"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Casos de error",
+      "item": [
+        {
+          "name": "404 - Producto inexistente",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/productos/999999"
+          },
+          "response": []
+        },
+        {
+          "name": "400 - Producto invalido (body vacio)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": { "mode": "raw", "raw": "{}" },
+            "url": "{{baseUrl}}/productos"
+          },
+          "response": []
+        },
+        {
+          "name": "409 - Eliminar categoria en uso",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/categorias/{{categoriaId}}"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
