@@ -1,12 +1,14 @@
 package com.uade.e_commerce.model;
 
+import java.util.ArrayList;
+import java.util.List;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -26,10 +28,9 @@ public class VarianteProducto {
     private String talle;
     private String color;
     private int stock;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "producto_id")
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
+    @ManyToOne
     private Producto producto;
+    @OneToMany(mappedBy = "productoVariante")
+    private List<PedidoItem> pedidoItems = new ArrayList<>();
 }
+    

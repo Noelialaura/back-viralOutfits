@@ -12,6 +12,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.EnumType;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -31,9 +32,8 @@ public class Pedido {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "usuario_id")
+    @ManyToOne 
+    @JoinColumn (name = "usuario_id")
     private Usuario usuario;
 
     private LocalDateTime fecha;
@@ -42,9 +42,7 @@ public class Pedido {
     private String direccionEnvio;
     @Enumerated(EnumType.STRING)
     private EstadoPedido estadoPedido;
-
-    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
+    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL)
     private List<PedidoItem> pedidoItems = new ArrayList<>();
 }
+

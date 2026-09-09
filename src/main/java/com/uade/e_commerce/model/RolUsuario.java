@@ -2,5 +2,6 @@ package com.uade.e_commerce.model;
 
 public enum RolUsuario {
     CLIENTE,
-    ADMIN
+    ADMIN,
+    VENDEDOR
 }
