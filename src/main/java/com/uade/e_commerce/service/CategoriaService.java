@@ -38,7 +38,23 @@ public class CategoriaService {
     }
 
     public CategoriaResponseDTO crearCategoria(CategoriaRequestDTO dto) {
+        if (categoriaRepository.existsByNombre(dto.getNombre())) {
+            throw new BusinessRuleException("Ya existe una categoria con el nombre " + dto.getNombre());
+        }
+
         Categoria categoria = new Categoria();
+        categoria.setNombre(dto.getNombre());
+        categoria.setDescripcion(dto.getDescripcion());
+        return toResponseDTO(categoriaRepository.save(categoria));
+    }
+
+    public CategoriaResponseDTO actualizarCategoria(Long id, CategoriaRequestDTO dto) {
+        Categoria categoria = buscarPorId(id);
+
+        if (categoriaRepository.existsByNombreAndIdNot(dto.getNombre(), id)) {
+            throw new BusinessRuleException("Ya existe una categoria con el nombre " + dto.getNombre());
+        }
+
         categoria.setNombre(dto.getNombre());
         categoria.setDescripcion(dto.getDescripcion());
         return toResponseDTO(categoriaRepository.save(categoria));

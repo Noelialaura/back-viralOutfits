@@ -3,6 +3,7 @@ package com.uade.e_commerce.exception;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -29,19 +30,17 @@ public class GlobalExceptionHandler {
         return construir(HttpStatus.UNAUTHORIZED, ex.getMessage(), request, List.of());
     }
 
-    /**
-     * Sin este handler, eliminar una categoria con productos asociados devolvia 500 en vez
-     * del 409 que espera la coleccion de Postman.
-     */
     @ExceptionHandler(BusinessRuleException.class)
     public ResponseEntity<ApiError> manejarBusinessRule(BusinessRuleException ex, WebRequest request) {
         return construir(HttpStatus.CONFLICT, ex.getMessage(), request, List.of());
     }
 
-    /**
-     * Es la excepcion que lanza @Valid cuando el body no cumple las restricciones del DTO.
-     * Se traduce a la misma forma de ApiError, con el detalle campo por campo.
-     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiError> manejarIntegridad(DataIntegrityViolationException ex, WebRequest request) {
+        return construir(HttpStatus.CONFLICT,
+                "La operacion viola una restriccion de integridad de los datos", request, List.of());
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiError> manejarValidacion(MethodArgumentNotValidException ex, WebRequest request) {
         List<String> detalles = ex.getBindingResult().getFieldErrors().stream()

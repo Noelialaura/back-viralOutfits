@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -14,11 +15,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.uade.e_commerce.DTO.VarianteProducto.VarianteProductoRequestDTO;
 import com.uade.e_commerce.DTO.VarianteProducto.VarianteProductoResponseDTO;
+import com.uade.e_commerce.DTO.VarianteProducto.VarianteStockRequestDTO;
 import com.uade.e_commerce.service.VarianteProductoService;
 
 import jakarta.validation.Valid;
 
-// http://localhost:8080/api/productos/{productoId}/variantes
 @RestController
 @RequestMapping("/api/productos/{productoId}/variantes")
 public class VarianteProductoController {
@@ -34,11 +35,31 @@ public class VarianteProductoController {
         return varianteProductoService.getVariantesDeProducto(productoId);
     }
 
+    @GetMapping("/{varianteId}")
+    public VarianteProductoResponseDTO getVariante(@PathVariable Long productoId,
+            @PathVariable Long varianteId) {
+        return varianteProductoService.getVariante(productoId, varianteId);
+    }
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public VarianteProductoResponseDTO agregarVariante(@PathVariable Long productoId,
             @Valid @RequestBody VarianteProductoRequestDTO variante) {
         return varianteProductoService.agregarVariante(productoId, variante);
+    }
+
+    @PutMapping("/{varianteId}")
+    public VarianteProductoResponseDTO actualizarVariante(@PathVariable Long productoId,
+            @PathVariable Long varianteId,
+            @Valid @RequestBody VarianteProductoRequestDTO variante) {
+        return varianteProductoService.actualizarVariante(productoId, varianteId, variante);
+    }
+
+    @PutMapping("/{varianteId}/stock")
+    public VarianteProductoResponseDTO actualizarStock(@PathVariable Long productoId,
+            @PathVariable Long varianteId,
+            @Valid @RequestBody VarianteStockRequestDTO stock) {
+        return varianteProductoService.actualizarStock(productoId, varianteId, stock);
     }
 
     @DeleteMapping("/{varianteId}")

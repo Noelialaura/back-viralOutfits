@@ -1,5 +1,6 @@
 package com.uade.e_commerce.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -25,15 +26,16 @@ public class CarritoItem {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "carrito_id")
+    @JoinColumn(name = "carrito_id", nullable = false)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private Carrito carrito;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "variante_producto_id")
+    @JoinColumn(name = "variante_producto_id", nullable = false)
     private VarianteProducto varianteProducto;
 
+    @Column(nullable = false)
     private int cantidad;
 
 }
