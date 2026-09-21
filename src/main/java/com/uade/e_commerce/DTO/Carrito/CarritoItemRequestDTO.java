@@ -6,6 +6,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Body para agregar un item al carrito (POST /api/carrito/items). El carrito no
+ * viaja en el request porque sale del token del usuario autenticado.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

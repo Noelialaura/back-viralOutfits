@@ -12,8 +12,10 @@ import com.uade.e_commerce.DTO.Usuario.UsuarioRequestDTO;
 import com.uade.e_commerce.DTO.Usuario.UsuarioResponseDTO;
 import com.uade.e_commerce.service.AuthService;
 
+import jakarta.validation.Valid;
 
-@RestController 
+
+@RestController
 @RequestMapping ("/auth")
 public class AuthController {
     private final AuthService authService;
@@ -22,7 +24,7 @@ public class AuthController {
         this.authService = authService;
     }
     @PostMapping("/registro")
-    public ResponseEntity<UsuarioResponseDTO> registrar(@RequestBody UsuarioRequestDTO dto) {
+    public ResponseEntity<UsuarioResponseDTO> registrar(@Valid @RequestBody UsuarioRequestDTO dto) {
 
         UsuarioResponseDTO usuario = authService.registrar(dto);
 
@@ -30,7 +32,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequestDTO dto) {
+    public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequestDTO dto) {
         LoginResponseDTO respuesta = authService.login(dto);
         
         return ResponseEntity.ok(respuesta);

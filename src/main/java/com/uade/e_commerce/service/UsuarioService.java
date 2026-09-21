@@ -1,8 +1,13 @@
 package com.uade.e_commerce.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.uade.e_commerce.DTO.Usuario.UsuarioResponseDTO;
+import com.uade.e_commerce.DTO.Usuario.UsuarioUpdateDTO;
+import com.uade.e_commerce.exception.ArgumentInvalidException;
+import com.uade.e_commerce.exception.BusinessRuleException;
 import com.uade.e_commerce.exception.ResourceNotFoundException;
 import com.uade.e_commerce.model.Usuario;
 import com.uade.e_commerce.repository.UsuarioRepository;
@@ -19,11 +24,45 @@ public class UsuarioService {
         this.usuarioRepository = usuarioRepository;
     }
 
+    public List<UsuarioResponseDTO> listarUsuarios() {
+        return usuarioRepository.findAll().stream()
+                .map(this::convertirAResponseDTO)
+                .toList();
+    }
+
     public UsuarioResponseDTO buscarPorId(Long id) {
 
-        Usuario usuario = usuarioRepository.findById(id).orElseThrow(() ->new ResourceNotFoundException("Usuario no encontrado con id: " + id));
+        Usuario usuario = buscarEntidadPorId(id);
 
         return convertirAResponseDTO(usuario);
+    }
+
+    public UsuarioResponseDTO actualizar(Long id, UsuarioUpdateDTO dto) {
+        Usuario usuario = buscarEntidadPorId(id);
+        if (!usuario.getEmail().equals(dto.getEmail()) && usuarioRepository.existsByEmail(dto.getEmail())) {
+            throw new ArgumentInvalidException("Ya existe un usuario registrado con el email " + dto.getEmail());
+        }
+
+        usuario.setNombre(dto.getNombre());
+        usuario.setApellido(dto.getApellido());
+        usuario.setEmail(dto.getEmail());
+        usuario.setGenero(dto.getGenero());
+
+        return convertirAResponseDTO(usuarioRepository.save(usuario));
+    }
+
+    public void eliminar(Long id) {
+        Usuario usuario = buscarEntidadPorId(id);
+        if (!usuario.getPedidos().isEmpty()) {
+            throw new BusinessRuleException("No se puede eliminar el usuario porque tiene pedidos asociados");
+        }
+
+        usuarioRepository.delete(usuario);
+    }
+
+    private Usuario buscarEntidadPorId(Long id) {
+        return usuarioRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + id));
     }
 
     private UsuarioResponseDTO convertirAResponseDTO(Usuario usuario) {

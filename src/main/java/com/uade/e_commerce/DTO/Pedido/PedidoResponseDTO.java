@@ -22,18 +22,4 @@ public class PedidoResponseDTO {
 	private Double total;
 	private EstadoPedido estadoPedido;
 	private List<PedidoItemResponseDTO> items;
-
-	@Data
-	@NoArgsConstructor
-	@AllArgsConstructor
-	public static class PedidoItemResponseDTO {
-		private Long id;
-		private Long productoVarianteId;
-		private String nombreProducto;
-		private String talla;
-		private String color;
-		private Double precioUnitario;
-		private Integer cantidad;
-		private Double subtotal;
-	}
 }

@@ -7,8 +7,9 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
-import com.uade.e_commerce.DTO.Carrito.CarritoRequestDTO;
+import com.uade.e_commerce.DTO.Carrito.CarritoItemRequestDTO;
 import com.uade.e_commerce.DTO.Carrito.CarritoItemResponseDTO;
+import com.uade.e_commerce.DTO.Carrito.CarritoItemUpdateDTO;
 import com.uade.e_commerce.DTO.Carrito.CarritoResponseDTO;
 import com.uade.e_commerce.exception.BusinessRuleException;
 import com.uade.e_commerce.exception.ResourceNotFoundException;
@@ -43,7 +44,7 @@ public class CarritoService {
         return toResponseDTO(carrito);
     }
 
-    public CarritoResponseDTO agregarItem(Long usuarioId, CarritoRequestDTO dto) {
+    public CarritoResponseDTO agregarItem(Long usuarioId, CarritoItemRequestDTO dto) {
         Carrito carrito = obtenerOCrearCarrito(usuarioId);
 
         VarianteProducto variante = varianteProductoRepository.findById(dto.getVarianteProductoId())
@@ -53,7 +54,7 @@ public class CarritoService {
             carrito.setCarritoItems(new ArrayList<>());
         }
 
-        // Buscar si ya estÃ¡ en el carrito
+        // Buscar si ya esta en el carrito
         Optional<CarritoItem> itemExistente = carrito.getCarritoItems().stream()
                 .filter(item -> item.getVarianteProducto().getId().equals(variante.getId()))
                 .findFirst();
@@ -77,6 +78,24 @@ public class CarritoService {
             nuevoItem.setCantidad(dto.getCantidad());
             carrito.getCarritoItems().add(nuevoItem);
         }
+
+        return toResponseDTO(carritoRepository.save(carrito));
+    }
+
+    public CarritoResponseDTO actualizarCantidadItem(Long usuarioId, Long itemId, CarritoItemUpdateDTO dto) {
+        Carrito carrito = obtenerOCrearCarrito(usuarioId);
+
+        CarritoItem item = carrito.getCarritoItems().stream()
+                .filter(i -> i.getId().equals(itemId))
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("El item con id " + itemId + " no se encuentra en el carrito"));
+
+        VarianteProducto variante = item.getVarianteProducto();
+        if (dto.getCantidad() > variante.getStock()) {
+            throw new BusinessRuleException("Stock insuficiente para el producto seleccionado. Stock disponible: " + variante.getStock());
+        }
+
+        item.setCantidad(dto.getCantidad());
 
         return toResponseDTO(carritoRepository.save(carrito));
     }

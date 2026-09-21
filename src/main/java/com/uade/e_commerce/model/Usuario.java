@@ -35,16 +35,31 @@ public class Usuario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false, length = 100)
     private String nombre;
+
+    @Column(nullable = false, length = 100)
     private String apellido;
-    @Column(unique = true, nullable = false)
+
+    @Column(unique = true, nullable = false, length = 150)
     private String email;
+
+    @Column(nullable = false)
     private String contrasena;
+
+    @Column(length = 30)
     private String telefono;
+
+    @Column
     private LocalDate fechaNacimiento;
+
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
     private RolUsuario rol;
+
     @Enumerated(EnumType.STRING)
+    @Column(length = 20)
     private Genero genero;
 
     // Excluidos de toString/equals: Carrito y Pedido apuntan de vuelta a Usuario y las
