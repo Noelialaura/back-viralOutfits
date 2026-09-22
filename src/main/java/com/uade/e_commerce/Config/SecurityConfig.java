@@ -40,19 +40,60 @@ public class SecurityConfig {
             // La API no usa sesiones: cada request se autentica con el token del header.
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/**").permitAll()
-                // Etapa inicial: los endpoints de negocio quedan abiertos para poder
-                // probarlos con Postman sin token. El filtro JWT igual esta cableado, asi
-                // que si mas adelante se cambia esto por hasRole(...) ya funciona.
-                .requestMatchers("/api/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/usuarios/**").permitAll()
-                .anyRequest().authenticated())
-            // Sin esto las respuestas de error de seguridad salian como redirect al login
-            // de Spring en vez de JSON, y las dos clases handler nunca se usaban.
+    
+                // PÚBLICOS
+                .requestMatchers("/auth/registro", "/auth/login")
+                    .permitAll()
+
+                // PRODUCTOS
+
+                .requestMatchers(HttpMethod.GET, "/api/productos/**")
+                    .permitAll()
+
+                .requestMatchers(HttpMethod.POST, "/api/productos/**")
+                    .hasRole("ADMIN")
+
+                .requestMatchers(HttpMethod.DELETE, "/api/productos/**")
+                    .hasRole("ADMIN")
+
+                // CATEGORÍAS
+
+                .requestMatchers(HttpMethod.GET, "/api/categorias/**")
+                    .permitAll()
+
+                .requestMatchers(HttpMethod.POST, "/api/categorias/**")
+                    .hasRole("ADMIN")
+
+                .requestMatchers(HttpMethod.DELETE, "/api/categorias/**")
+                    .hasRole("ADMIN")
+
+                // CARRITO
+
+                .requestMatchers("/api/carrito/**")
+                    .hasRole("CLIENTE")
+
+
+                // USUARIOS
+
+                .requestMatchers(HttpMethod.GET, "/usuarios/**")
+                    .hasAnyRole("CLIENTE", "ADMIN")
+
+                // RESTO:  Cualquier otro endpoint requiere autenticación
+                .anyRequest().authenticated()
+            )
+
+            // Manejo de errores de seguridad
             .exceptionHandling(ex -> ex
                 .authenticationEntryPoint(jwtAuthenticationEntryPoint)
-                .accessDeniedHandler(restAccessDeniedHandler))
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .accessDeniedHandler(restAccessDeniedHandler)
+            )
+
+            // Filtro JWT antes del filtro estándar de autenticación
+            .addFilterBefore(
+                jwtAuthenticationFilter,
+                UsernamePasswordAuthenticationFilter.class
+            )
+
             .build();
     }
 }
