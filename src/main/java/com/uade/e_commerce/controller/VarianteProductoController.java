@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -25,7 +26,7 @@ public class VarianteProductoController {
 
     private final VarianteProductoService varianteProductoService;
 
-    VarianteProductoController(VarianteProductoService varianteProductoService) {
+    public VarianteProductoController(VarianteProductoService varianteProductoService) {
         this.varianteProductoService = varianteProductoService;
     }
 
@@ -39,6 +40,13 @@ public class VarianteProductoController {
     public VarianteProductoResponseDTO agregarVariante(@PathVariable Long productoId,
             @Valid @RequestBody VarianteProductoRequestDTO variante) {
         return varianteProductoService.agregarVariante(productoId, variante);
+    }
+
+    @PutMapping("/{varianteId}")
+    public VarianteProductoResponseDTO actualizarVariante(@PathVariable Long productoId,
+            @PathVariable Long varianteId,
+            @Valid @RequestBody VarianteProductoRequestDTO variante) {
+        return varianteProductoService.actualizarVariante(productoId, varianteId, variante);
     }
 
     @DeleteMapping("/{varianteId}")

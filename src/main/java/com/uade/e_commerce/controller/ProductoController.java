@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -25,7 +26,7 @@ public class ProductoController {
 
     private final ProductoService productoService;
 
-    ProductoController(ProductoService productoService) {
+    public ProductoController(ProductoService productoService) {
         this.productoService = productoService;
     }
 
@@ -51,7 +52,15 @@ public class ProductoController {
         return productoService.getProducto(id);
     }
 
-    // Endpoint 4 : eliminar un producto segun id
+    // Endpoint 4 : actualizar un producto segun id
+    // put http://localhost:8080/api/productos/1
+    @PutMapping("/{id}")
+    public ProductoResponseDTO actualizarProducto(@PathVariable Long id,
+            @Valid @RequestBody ProductoRequestDTO producto) {
+        return productoService.actualizarProducto(id, producto);
+    }
+
+    // Endpoint 5 : eliminar un producto segun id
     // delete http://localhost:8080/api/productos/1
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)

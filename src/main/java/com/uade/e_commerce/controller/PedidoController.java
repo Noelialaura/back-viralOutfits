@@ -5,12 +5,14 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.uade.e_commerce.DTO.Pedido.PedidoCrearRequestDTO;
 import com.uade.e_commerce.DTO.Pedido.PedidoRequestDTO;
 import com.uade.e_commerce.DTO.Pedido.PedidoResponseDTO;
 import com.uade.e_commerce.service.PedidoService;
@@ -40,6 +42,13 @@ public class PedidoController {
 	@GetMapping("/usuario/{usuarioId}")
 	public List<PedidoResponseDTO> getPedidosByUsuario(@PathVariable Long usuarioId) {
 		return pedidoService.getPedidosByUsuario(usuarioId);
+	}
+
+	@PostMapping("/usuario/{usuarioId}")
+	@ResponseStatus(HttpStatus.CREATED)
+	public PedidoResponseDTO crearPedido(@PathVariable Long usuarioId,
+			@Valid @RequestBody PedidoCrearRequestDTO pedidoRequest) {
+		return pedidoService.crearPedido(usuarioId, pedidoRequest);
 	}
 
 	@PutMapping("/{id}/estado")

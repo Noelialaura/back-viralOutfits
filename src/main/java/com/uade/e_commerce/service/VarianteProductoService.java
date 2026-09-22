@@ -46,6 +46,21 @@ public class VarianteProductoService {
         return toResponseDTO(varianteProductoRepository.save(variante));
     }
 
+    public VarianteProductoResponseDTO actualizarVariante(Long productoId, Long varianteId, VarianteProductoRequestDTO dto) {
+        VarianteProducto variante = varianteProductoRepository.findById(varianteId)
+                .orElseThrow(() -> new ResourceNotFoundException("Variante no encontrada con id " + varianteId));
+
+        if (!variante.getProducto().getId().equals(productoId)) {
+            throw new ResourceNotFoundException("La variante " + varianteId + " no pertenece al producto " + productoId);
+        }
+
+        variante.setTalle(dto.getTalle());
+        variante.setColor(dto.getColor());
+        variante.setStock(dto.getStock());
+
+        return toResponseDTO(varianteProductoRepository.save(variante));
+    }
+
     public void eliminarVariante(Long productoId, Long varianteId) {
         VarianteProducto variante = varianteProductoRepository.findById(varianteId)
                 .orElseThrow(() -> new ResourceNotFoundException("Variante no encontrada con id " + varianteId));

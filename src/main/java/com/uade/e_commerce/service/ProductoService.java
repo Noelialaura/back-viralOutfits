@@ -52,6 +52,20 @@ public class ProductoService {
         return toResponseDTO(buscarPorId(id));
     }
 
+    public ProductoResponseDTO actualizarProducto(Long id, ProductoRequestDTO dto) {
+        Producto producto = buscarPorId(id);
+        Categoria categoria = categoriaRepository.findById(dto.getCategoriaId())
+                .orElseThrow(() -> new ResourceNotFoundException("Categoria no encontrada con id " + dto.getCategoriaId()));
+
+        producto.setNombre(dto.getNombre());
+        producto.setDescripcion(dto.getDescripcion());
+        producto.setPrecio(dto.getPrecio());
+        producto.setMarca(dto.getMarca());
+        producto.setCategoria(categoria);
+
+        return toResponseDTO(productoRepository.save(producto));
+    }
+
     public void eliminarProducto(Long id) {
         Producto producto = buscarPorId(id);
         productoRepository.delete(producto);

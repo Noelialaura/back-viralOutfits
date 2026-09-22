@@ -44,6 +44,13 @@ public class CategoriaService {
         return toResponseDTO(categoriaRepository.save(categoria));
     }
 
+    public CategoriaResponseDTO actualizarCategoria(Long id, CategoriaRequestDTO dto) {
+        Categoria categoria = buscarPorId(id);
+        categoria.setNombre(dto.getNombre());
+        categoria.setDescripcion(dto.getDescripcion());
+        return toResponseDTO(categoriaRepository.save(categoria));
+    }
+
     public void eliminarCategoria(Long id) {
         Categoria categoria = buscarPorId(id);
         if (productoRepository.existsByCategoriaId(categoria.getId())) {
