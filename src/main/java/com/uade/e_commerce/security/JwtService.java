@@ -6,11 +6,13 @@ import java.util.function.Function;
 import javax.crypto.SecretKey;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import com.uade.e_commerce.model.RolUsuario;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 
@@ -26,7 +28,6 @@ public class JwtService {
     public String generarToken(Long id, String email, RolUsuario rol) {
         Date ahora = new Date();
         Date expiracion = new Date(ahora.getTime() + expirationMs);
-
         return Jwts.builder()
                 .subject(email)
                 .claim("id", id)
@@ -41,15 +42,25 @@ public class JwtService {
         return extractClaim(token, Claims::getSubject);
     }
 
-    public boolean esTokenValido(String token, String email) {
-        return extractEmail(token).equals(email) && !estaExpirado(token);
+    // Valida que el email coincida con el UserDetails y que el token no haya expirado
+    public boolean esTokenValido(String token, UserDetails userDetails) {
+        try {
+            final String email = extractEmail(token);
+            return email != null && email.equals(userDetails.getUsername()) && !estaExpirado(token);
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
     }
 
-    private boolean estaExpirado(String token) {
-        return extractClaim(token, Claims::getExpiration).before(new Date());
+    public boolean estaExpirado(String token) {
+        try {
+            return extractClaim(token, Claims::getExpiration).before(new Date());
+        } catch (JwtException | IllegalArgumentException e) {
+            return true;
+        }
     }
 
-    private <T> T extractClaim(String token, Function<Claims, T> resolver) {
+    public <T> T extractClaim(String token, Function<Claims, T> resolver) {
         Claims claims = Jwts.parser()
                 .verifyWith(getSigningKey())
                 .build()

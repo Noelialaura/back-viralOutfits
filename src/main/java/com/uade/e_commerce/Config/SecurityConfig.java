@@ -36,23 +36,45 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http.csrf(csrf -> csrf.disable())
             // La API no usa sesiones: cada request se autentica con el token del header.
+        return http
+            // 1. Deshabilitar CSRF (innecesario para APIs REST sin cookies de sesión)
+            .csrf(csrf -> csrf.disable())
+
+            // 2. Sesiones sin estado (Stateless): la autenticación depende únicamente del token JWT
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+            // 3. Reglas de autorización de endpoints
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/**").permitAll()
-                // Etapa inicial: los endpoints de negocio quedan abiertos para poder
-                // probarlos con Postman sin token. El filtro JWT igual esta cableado, asi
-                // que si mas adelante se cambia esto por hasRole(...) ya funciona.
-                .requestMatchers("/api/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/usuarios/**").permitAll()
-                .anyRequest().authenticated())
-            // Sin esto las respuestas de error de seguridad salian como redirect al login
-            // de Spring en vez de JSON, y las dos clases handler nunca se usaban.
+                // Rutas públicas: registro, login y el dispatch interno de errores
+                .requestMatchers("/auth/**", "/error").permitAll()
+
+                // Consulta pública del catálogo de productos y categorías
+                .requestMatchers(HttpMethod.GET, "/api/productos/**", "/api/categorias/**").permitAll()
+
+                // Gestión de catálogo restringida a rol ADMIN
+                .requestMatchers(HttpMethod.POST, "/api/productos/**", "/api/categorias/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/productos/**", "/api/categorias/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/productos/**", "/api/categorias/**").hasRole("ADMIN")
+
+                // Operaciones de clientes que exigen token válido
+                .requestMatchers("/api/carrito/**").authenticated()
+                .requestMatchers("/api/pedidos/**").authenticated()
+                .requestMatchers("/usuarios/me").authenticated()
+
+                // Cualquier otra solicitud requiere autenticación
+                .anyRequest().authenticated()
+            )
+
+            // 4. Manejo de excepciones de seguridad (401 Unauthorized y 403 Forbidden en formato JSON)
             .exceptionHandling(ex -> ex
                 .authenticationEntryPoint(jwtAuthenticationEntryPoint)
-                .accessDeniedHandler(restAccessDeniedHandler))
+                .accessDeniedHandler(restAccessDeniedHandler)
+            )
+
+            // 5. Inserción del filtro JWT antes del filtro estándar de usuario y contraseña
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+
             .build();
     }
 }
