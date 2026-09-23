@@ -53,6 +53,9 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/productos/**")
                     .hasRole("ADMIN")
 
+                .requestMatchers(HttpMethod.PUT, "/api/productos/**")
+                    .hasRole("ADMIN")
+
                 .requestMatchers(HttpMethod.DELETE, "/api/productos/**")
                     .hasRole("ADMIN")
 
@@ -64,7 +67,20 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/categorias/**")
                     .hasRole("ADMIN")
 
+                .requestMatchers(HttpMethod.PUT, "/api/categorias/**")
+                    .hasRole("ADMIN")
+
                 .requestMatchers(HttpMethod.DELETE, "/api/categorias/**")
+                    .hasRole("ADMIN")
+
+                // VARIANTES
+
+                // Lectura publica de variantes.
+                .requestMatchers(HttpMethod.GET, "/api/productos/*/variantes/**")
+                    .permitAll()
+
+                // Alta, modificacion de stock y eliminacion de variantes: solo ADMIN.
+                .requestMatchers("/api/productos/*/variantes/**")
                     .hasRole("ADMIN")
 
                 // CARRITO
@@ -72,11 +88,29 @@ public class SecurityConfig {
                 .requestMatchers("/api/carrito/**")
                     .hasRole("CLIENTE")
 
+                // PEDIDOS
+
+                // El cliente puede crear pedidos usando su usuario autenticado.
+                .requestMatchers(HttpMethod.POST, "/api/pedidos")
+                    .hasAnyRole("CLIENTE", "ADMIN")
+
+                // El cliente consulta solamente sus pedidos mediante este endpoint.
+                .requestMatchers(HttpMethod.GET, "/api/pedidos/mis-pedidos")
+                    .hasAnyRole("CLIENTE", "ADMIN")
+
+                // Listado, consulta individual, cambio de estado y eliminacion: solo ADMIN.
+                .requestMatchers("/api/pedidos/**")
+                    .hasRole("ADMIN")
 
                 // USUARIOS
 
-                .requestMatchers(HttpMethod.GET, "/usuarios/**")
+                // Cada usuario autenticado puede consultar su propio perfil.
+                .requestMatchers(HttpMethod.GET, "/usuarios/me")
                     .hasAnyRole("CLIENTE", "ADMIN")
+
+                // Listado, consulta por ID, modificacion y eliminacion: solo ADMIN.
+                .requestMatchers("/usuarios/**")
+                    .hasRole("ADMIN")
 
                 // RESTO:  Cualquier otro endpoint requiere autenticación
                 .anyRequest().authenticated()
