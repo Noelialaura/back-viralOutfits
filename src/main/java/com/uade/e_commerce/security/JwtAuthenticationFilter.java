@@ -31,30 +31,37 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
             FilterChain filterChain) throws ServletException, IOException {
 
-        String header = request.getHeader("Authorization");
-        if (header == null || !header.startsWith("Bearer ")) {
+        final String authHeader = request.getHeader("Authorization");
+
+        // Si no hay cabecera Authorization o no empieza con Bearer, sigue la cadena sin autenticar
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        String token = header.substring(7);
+        final String jwt = authHeader.substring(7);
 
         try {
-            String email = jwtService.extractEmail(token);
-            if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-                if (jwtService.esTokenValido(token, email)) {
+            final String userEmail = jwtService.extractEmail(jwt);
+
+            // Si se extrae el email y aún no hay una sesión autenticada en el hilo actual
+            if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
+
+                if (jwtService.esTokenValido(jwt, userDetails)) {
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            userDetails, null, userDetails.getAuthorities());
+                            userDetails,
+                            null,
+                            userDetails.getAuthorities() // Contiene "ROLE_CLIENTE" o "ROLE_ADMIN"
+                    );
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             }
-        } catch (JwtException | IllegalArgumentException | AuthenticationException ex) {
-            // Token invalido/expirado, o firmado para un usuario que ya no existe (borrado o
-            // con el email cambiado): se continua sin autenticar para que responda el
-            // JwtAuthenticationEntryPoint. Si la excepcion escapara del filtro, la respuesta
-            // saldria por el dispatch de error del contenedor y perderia el path original.
+        } catch (JwtException | IllegalArgumentException | AuthenticationException e) {
+            // Si el token es fraudulento, está vencido o con firma inválida, se limpia el contexto.
+            // La petición continuará como anónima y SecurityConfig / EntryPoint disparará el 401.
+            SecurityContextHolder.clearContext();
         }
 
         filterChain.doFilter(request, response);
