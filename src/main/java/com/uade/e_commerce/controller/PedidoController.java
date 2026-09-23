@@ -54,9 +54,12 @@ public class PedidoController {
 		return pedidoService.getPedidosByUsuario(UsuarioAutenticado.obtenerId(usuarioDetails));
 	}
 
+	// El ADMIN consulta cualquier pedido; el CLIENTE solamente los suyos.
 	@GetMapping("/{id}")
-	public PedidoResponseDTO getPedido(@PathVariable Long id) {
-		return pedidoService.getPedido(id);
+	public PedidoResponseDTO getPedido(@AuthenticationPrincipal UsuarioDetails usuarioDetails,
+			@PathVariable Long id) {
+		return pedidoService.getPedido(id, UsuarioAutenticado.obtenerId(usuarioDetails),
+				UsuarioAutenticado.esAdmin(usuarioDetails));
 	}
 
 	@GetMapping("/usuario/{usuarioId}")

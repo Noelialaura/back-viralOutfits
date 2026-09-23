@@ -74,31 +74,33 @@ public class SecurityConfig {
                     .hasRole("ADMIN")
 
                 // VARIANTES
-
-                // Lectura publica de variantes.
-                .requestMatchers(HttpMethod.GET, "/api/productos/*/variantes/**")
-                    .permitAll()
-
-                // Alta, modificacion de stock y eliminacion de variantes: solo ADMIN.
-                .requestMatchers("/api/productos/*/variantes/**")
-                    .hasRole("ADMIN")
+                // No necesitan reglas propias: /api/productos/** ya las cubre con el mismo
+                // criterio (GET publico, alta/modificacion/baja solo ADMIN).
 
                 // CARRITO
 
+                // El carrito es del comprador: el ADMIN administra, no compra.
                 .requestMatchers("/api/carrito/**")
                     .hasRole("CLIENTE")
 
                 // PEDIDOS
 
-                // El cliente puede crear pedidos usando su usuario autenticado.
+                // El checkout toma los items del carrito, asi que tambien es solo del CLIENTE.
                 .requestMatchers(HttpMethod.POST, "/api/pedidos")
-                    .hasAnyRole("CLIENTE", "ADMIN")
+                    .hasRole("CLIENTE")
 
-                // El cliente consulta solamente sus pedidos mediante este endpoint.
+                // El cliente consulta el listado de sus pedidos mediante este endpoint.
                 .requestMatchers(HttpMethod.GET, "/api/pedidos/mis-pedidos")
+                    .hasRole("CLIENTE")
+
+                // Detalle de un pedido. Va despues de /mis-pedidos porque el patron de un
+                // segmento tambien lo matchearia. El CLIENTE entra aca, pero PedidoService
+                // valida que el pedido sea suyo antes de devolverlo.
+                .requestMatchers(HttpMethod.GET, "/api/pedidos/*")
                     .hasAnyRole("CLIENTE", "ADMIN")
 
-                // Listado, consulta individual, cambio de estado y eliminacion: solo ADMIN.
+                // Listado completo, pedidos de otro usuario, cambio de estado y eliminacion:
+                // solo ADMIN.
                 .requestMatchers("/api/pedidos/**")
                     .hasRole("ADMIN")
 
@@ -114,6 +116,13 @@ public class SecurityConfig {
 
                 // RESTO:  Cualquier otro endpoint requiere autenticación
                 .anyRequest().authenticated()
+            )
+
+            // Cabeceras de seguridad. Spring Security ya envia X-Content-Type-Options: nosniff
+            // y X-Frame-Options: DENY por defecto; la CSP se declara para que un navegador no
+            // ejecute nada si alguna respuesta llegara a interpretarse como HTML.
+            .headers(headers -> headers
+                .contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'none'; frame-ancestors 'none'"))
             )
 
             // Manejo de errores de seguridad
