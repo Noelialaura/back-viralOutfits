@@ -1,20 +1,152 @@
 {
   "info": {
     "_postman_id": "b6e1a2d4-2f3a-4c1e-9a2f-7c1e2d3f4a5b",
-    "name": "E-Commerce API - Productos",
-    "description": "Coleccion para probar manualmente Categoria, Producto y VarianteProducto.",
+    "name": "E-Commerce API - Grupo 6 Jueves Noche",
+    "description": "Coleccion completa de la API. Correr las carpetas en orden (1 a 6): los logins guardan los tokens en variables de coleccion y cada carpeta usa los ids que dejo la anterior. Se puede correr las veces que haga falta: no deja nada sucio en la base.\n\nDatos que ya existen al levantar la app:\n- ADMIN: admin@uade.com / admin123 (lo crea AdminInicialConfig)\n- Categorias del catalogo: Calzado, Ropa y Accesorios (las crea CategoriaInicialConfig)\n\nDatos que crea la coleccion:\n- CLIENTE: cliente@uade.com / cliente123 (carpeta 1)\n- Producto, variante, carrito y pedido de prueba (carpetas 2 y 4)",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    { "key": "baseUrl", "value": "http://localhost:8080/api", "type": "string" },
+    { "key": "baseUrl", "value": "http://localhost:8080", "type": "string" },
+    { "key": "tokenAdmin", "value": "", "type": "string" },
+    { "key": "tokenCliente", "value": "", "type": "string" },
+    { "key": "tokenCliente2", "value": "", "type": "string" },
     { "key": "categoriaId", "value": "", "type": "string" },
+    { "key": "categoriaPruebaId", "value": "", "type": "string" },
     { "key": "productoId", "value": "", "type": "string" },
-    { "key": "varianteId", "value": "", "type": "string" }
+    { "key": "varianteId", "value": "", "type": "string" },
+    { "key": "carritoItemId", "value": "", "type": "string" },
+    { "key": "pedidoId", "value": "", "type": "string" }
   ],
   "item": [
     {
-      "name": "Categorias",
+      "name": "1 - Auth",
+      "description": "Registro y login. Los dos logins guardan el token en una variable de coleccion; el resto de las carpetas lo usan en el header Authorization.",
       "item": [
+        {
+          "name": "Registrar Cliente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// 201 la primera vez; 400 'El email ya se encuentra registrado' si se vuelve a correr.",
+                  "pm.test('Registro exitoso o usuario ya existente', function () {",
+                  "    pm.expect([201, 400]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 201) {",
+                  "    pm.test('El registro siempre crea un CLIENTE, nunca un ADMIN', function () {",
+                  "        pm.expect(pm.response.json().rol).to.eql('CLIENTE');",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Lisandro\",\n  \"apellido\": \"Duclos\",\n  \"email\": \"cliente@uade.com\",\n  \"contrasena\": \"cliente123\",\n  \"telefono\": \"1122334455\",\n  \"fechaNacimiento\": \"2000-05-10\",\n  \"genero\": \"MASCULINO\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/registro",
+            "description": "Alta publica de usuario. AuthService fuerza el rol CLIENTE: no se puede auto-registrar un ADMIN."
+          },
+          "response": []
+        },
+        {
+          "name": "Login Cliente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "",
+                  "if (pm.response.code === 200) {",
+                  "    pm.collectionVariables.set('tokenCliente', pm.response.json().token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"cliente@uade.com\",\n  \"contrasena\": \"cliente123\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/login",
+            "description": "Devuelve el JWT firmado con jwt.secret y valido por jwt.expiration-ms (24 h)."
+          },
+          "response": []
+        },
+        {
+          "name": "Login Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "",
+                  "if (pm.response.code === 200) {",
+                  "    pm.collectionVariables.set('tokenAdmin', pm.response.json().token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@uade.com\",\n  \"contrasena\": \"admin123\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/login"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2 - Admin (ABM del catalogo)",
+      "description": "Todo lo que solo puede hacer el ADMIN. Requiere haber corrido Login Admin.\n\nEl ABM de categorias se hace sobre una categoria descartable que se crea y se borra aca mismo: Calzado, Ropa y Accesorios son datos del negocio y no se tocan.",
+      "item": [
+        {
+          "name": "Obtener Categorias del Catalogo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Calzado, Ropa y Accesorios vienen sembradas por CategoriaInicialConfig.",
+                  "// Se guarda el id de Ropa para colgar de ahi el producto de prueba.",
+                  "pm.test('Estan las tres categorias del catalogo', function () {",
+                  "    var nombres = pm.response.json().map(function (c) { return c.nombre; });",
+                  "    pm.expect(nombres).to.include.members(['Calzado', 'Ropa', 'Accesorios']);",
+                  "});",
+                  "",
+                  "var ropa = pm.response.json().find(function (c) { return c.nombre === 'Ropa'; });",
+                  "if (ropa) { pm.collectionVariables.set('categoriaId', ropa.id); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" } ],
+            "url": "{{baseUrl}}/api/categorias"
+          },
+          "response": []
+        },
         {
           "name": "Crear Categoria",
           "event": [
@@ -24,8 +156,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "if (pm.response.code === 201) {",
-                  "    var json = pm.response.json();",
-                  "    pm.collectionVariables.set('categoriaId', json.id);",
+                  "    pm.collectionVariables.set('categoriaPruebaId', pm.response.json().id);",
                   "}"
                 ]
               }
@@ -33,47 +164,34 @@
           ],
           "request": {
             "method": "POST",
-            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }
+            ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Remeras\",\n  \"descripcion\": \"Remeras de algodon\"\n}"
+              "raw": "{\n  \"nombre\": \"Categoria de prueba\",\n  \"descripcion\": \"Se crea y se elimina en esta misma carpeta\"\n}"
             },
-            "url": "{{baseUrl}}/categorias"
+            "url": "{{baseUrl}}/api/categorias"
           },
           "response": []
         },
         {
-          "name": "Listar Categorias",
+          "name": "Actualizar Categoria",
           "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{baseUrl}}/categorias"
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Categoria de prueba\",\n  \"descripcion\": \"Descripcion modificada por el PUT\"\n}"
+            },
+            "url": "{{baseUrl}}/api/categorias/{{categoriaPruebaId}}"
           },
           "response": []
         },
-        {
-          "name": "Obtener Categoria por Id",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{baseUrl}}/categorias/{{categoriaId}}"
-          },
-          "response": []
-        },
-        {
-          "name": "Eliminar Categoria",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": "{{baseUrl}}/categorias/{{categoriaId}}"
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Productos",
-      "item": [
         {
           "name": "Crear Producto",
           "event": [
@@ -83,8 +201,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "if (pm.response.code === 201) {",
-                  "    var json = pm.response.json();",
-                  "    pm.collectionVariables.set('productoId', json.id);",
+                  "    pm.collectionVariables.set('productoId', pm.response.json().id);",
                   "}"
                 ]
               }
@@ -92,47 +209,18 @@
           ],
           "request": {
             "method": "POST",
-            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"nombre\": \"Remera basica\",\n  \"descripcion\": \"100% algodon\",\n  \"precio\": 9999.5,\n  \"marca\": \"UADE Wear\",\n  \"categoriaId\": {{categoriaId}}\n}"
             },
-            "url": "{{baseUrl}}/productos"
+            "url": "{{baseUrl}}/api/productos"
           },
           "response": []
         },
-        {
-          "name": "Listar Productos",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{baseUrl}}/productos"
-          },
-          "response": []
-        },
-        {
-          "name": "Obtener Producto por Id",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{baseUrl}}/productos/{{productoId}}"
-          },
-          "response": []
-        },
-        {
-          "name": "Eliminar Producto",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": "{{baseUrl}}/productos/{{productoId}}"
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Variantes de Producto",
-      "item": [
         {
           "name": "Agregar Variante",
           "event": [
@@ -142,8 +230,439 @@
                 "type": "text/javascript",
                 "exec": [
                   "if (pm.response.code === 201) {",
-                  "    var json = pm.response.json();",
-                  "    pm.collectionVariables.set('varianteId', json.id);",
+                  "    pm.collectionVariables.set('varianteId', pm.response.json().id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"talle\": \"M\",\n  \"color\": \"Negro\",\n  \"stock\": 15\n}"
+            },
+            "url": "{{baseUrl}}/api/productos/{{productoId}}/variantes"
+          },
+          "response": []
+        },
+        {
+          "name": "Actualizar Stock de Variante",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"stock\": 20\n}" },
+            "url": "{{baseUrl}}/api/productos/{{productoId}}/variantes/{{varianteId}}/stock"
+          },
+          "response": []
+        },
+        {
+          "name": "Listar Usuarios",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" } ],
+            "url": "{{baseUrl}}/usuarios"
+          },
+          "response": []
+        },
+        {
+          "name": "Eliminar Categoria de prueba",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Cierra el CRUD de categorias y deja la base como estaba, para que la",
+                  "// coleccion se pueda volver a correr sin chocar con el nombre duplicado.",
+                  "pm.test('Status 204', function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [ { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" } ],
+            "url": "{{baseUrl}}/api/categorias/{{categoriaPruebaId}}"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3 - Catalogo publico (sin token)",
+      "description": "Ninguno de estos requests manda Authorization: un visitante sin login puede navegar el catalogo completo, pero no comprar.",
+      "item": [
+        {
+          "name": "Listar Categorias",
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/categorias" },
+          "response": []
+        },
+        {
+          "name": "Listar Productos",
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/productos" },
+          "response": []
+        },
+        {
+          "name": "Filtrar Productos por Categoria",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/productos?categoriaId={{categoriaId}}"
+          },
+          "response": []
+        },
+        {
+          "name": "Obtener Producto por Id",
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/productos/{{productoId}}" },
+          "response": []
+        },
+        {
+          "name": "Listar Variantes de un Producto",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/productos/{{productoId}}/variantes"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4 - Cliente (compra de punta a punta)",
+      "description": "Flujo completo del comprador. El dueno del carrito y del pedido sale del token: no se manda ningun usuarioId en la URL ni en el body.",
+      "item": [
+        {
+          "name": "Ver mi Perfil",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{tokenCliente}}" } ],
+            "url": "{{baseUrl}}/usuarios/me"
+          },
+          "response": []
+        },
+        {
+          "name": "Agregar Item al Carrito",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var items = pm.response.json().items;",
+                  "    pm.collectionVariables.set('carritoItemId', items[items.length - 1].id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{tokenCliente}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"varianteProductoId\": {{varianteId}},\n  \"cantidad\": 2\n}"
+            },
+            "url": "{{baseUrl}}/api/carrito/items"
+          },
+          "response": []
+        },
+        {
+          "name": "Ver mi Carrito",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{tokenCliente}}" } ],
+            "url": "{{baseUrl}}/api/carrito"
+          },
+          "response": []
+        },
+        {
+          "name": "Actualizar Cantidad del Item",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{tokenCliente}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"cantidad\": 3\n}" },
+            "url": "{{baseUrl}}/api/carrito/items/{{carritoItemId}}"
+          },
+          "response": []
+        },
+        {
+          "name": "Confirmar Compra",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    pm.collectionVariables.set('pedidoId', pm.response.json().id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{tokenCliente}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"metodoPago\": \"TARJETA\",\n  \"direccionEnvio\": \"Lima 775, CABA\"\n}"
+            },
+            "url": "{{baseUrl}}/api/pedidos",
+            "description": "Toma los items del carrito del usuario autenticado, descuenta stock y vacia el carrito."
+          },
+          "response": []
+        },
+        {
+          "name": "Mis Pedidos",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{tokenCliente}}" } ],
+            "url": "{{baseUrl}}/api/pedidos/mis-pedidos"
+          },
+          "response": []
+        },
+        {
+          "name": "Ver Detalle de mi Pedido",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{tokenCliente}}" } ],
+            "url": "{{baseUrl}}/api/pedidos/{{pedidoId}}",
+            "description": "PedidoService valida que el pedido sea del usuario del token antes de devolverlo."
+          },
+          "response": []
+        },
+        {
+          "name": "Admin - Cambiar Estado del Pedido",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"estadoPedido\": \"PAGADO\"\n}" },
+            "url": "{{baseUrl}}/api/pedidos/{{pedidoId}}/estado"
+          },
+          "response": []
+        },
+        {
+          "name": "Admin - Listar Pedidos por Estado",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" } ],
+            "url": "{{baseUrl}}/api/pedidos?estado=PAGADO"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "5 - Casos de seguridad",
+      "description": "Cada request de esta carpeta tiene que fallar con el codigo indicado en su nombre. Es la carpeta que demuestra la autenticacion, la autorizacion por rol y la proteccion contra XSS.",
+      "item": [
+        {
+          "name": "401 - Ver carrito sin token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [ "pm.test('Status 401', function () { pm.response.to.have.status(401); });" ]
+              }
+            }
+          ],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/carrito" },
+          "response": []
+        },
+        {
+          "name": "401 - Token invalido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [ "pm.test('Status 401', function () { pm.response.to.have.status(401); });" ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer token.falso.inventado" } ],
+            "url": "{{baseUrl}}/api/carrito"
+          },
+          "response": []
+        },
+        {
+          "name": "401 - Login con email inexistente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Mismo 401 y mismo mensaje que una contrasena incorrecta: la API no revela",
+                  "// que emails estan registrados.",
+                  "pm.test('Status 401', function () { pm.response.to.have.status(401); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"noexiste@uade.com\",\n  \"contrasena\": \"cualquiera\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/login"
+          },
+          "response": []
+        },
+        {
+          "name": "401 - Login con contrasena incorrecta",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [ "pm.test('Status 401', function () { pm.response.to.have.status(401); });" ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"cliente@uade.com\",\n  \"contrasena\": \"incorrecta\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/login"
+          },
+          "response": []
+        },
+        {
+          "name": "403 - Cliente intenta crear un producto",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [ "pm.test('Status 403', function () { pm.response.to.have.status(403); });" ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{tokenCliente}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Producto pirata\",\n  \"precio\": 1,\n  \"categoriaId\": {{categoriaId}}\n}"
+            },
+            "url": "{{baseUrl}}/api/productos"
+          },
+          "response": []
+        },
+        {
+          "name": "403 - Cliente intenta listar todos los pedidos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [ "pm.test('Status 403', function () { pm.response.to.have.status(403); });" ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{tokenCliente}}" } ],
+            "url": "{{baseUrl}}/api/pedidos"
+          },
+          "response": []
+        },
+        {
+          "name": "403 - Cliente intenta listar los usuarios",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [ "pm.test('Status 403', function () { pm.response.to.have.status(403); });" ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{tokenCliente}}" } ],
+            "url": "{{baseUrl}}/usuarios"
+          },
+          "response": []
+        },
+        {
+          "name": "403 - Admin intenta comprar (no tiene carrito)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// El ADMIN administra el catalogo y los pedidos, no compra.",
+                  "pm.test('Status 403', function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" } ],
+            "url": "{{baseUrl}}/api/carrito"
+          },
+          "response": []
+        },
+        {
+          "name": "Setup - Registrar segundo cliente",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Otro\",\n  \"apellido\": \"Cliente\",\n  \"email\": \"cliente2@uade.com\",\n  \"contrasena\": \"cliente123\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/registro",
+            "description": "Solo sirve para el caso siguiente: un cliente distinto al que hizo la compra."
+          },
+          "response": []
+        },
+        {
+          "name": "Setup - Login segundo cliente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    pm.collectionVariables.set('tokenCliente2', pm.response.json().token);",
                   "}"
                 ]
               }
@@ -154,41 +673,132 @@
             "header": [ { "key": "Content-Type", "value": "application/json" } ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"talle\": \"M\",\n  \"color\": \"Negro\",\n  \"stock\": 15\n}"
+              "raw": "{\n  \"email\": \"cliente2@uade.com\",\n  \"contrasena\": \"cliente123\"\n}"
             },
-            "url": "{{baseUrl}}/productos/{{productoId}}/variantes"
+            "url": "{{baseUrl}}/auth/login"
           },
           "response": []
         },
         {
-          "name": "Listar Variantes de un Producto",
+          "name": "403 - Cliente intenta ver el pedido de otro cliente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// La URL esta abierta al rol CLIENTE, pero PedidoService verifica que el",
+                  "// pedido sea del usuario del token. Sin ese chequeo alcanzaria con probar ids.",
+                  "pm.test('Status 403', function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "GET",
-            "header": [],
-            "url": "{{baseUrl}}/productos/{{productoId}}/variantes"
+            "header": [ { "key": "Authorization", "value": "Bearer {{tokenCliente2}}" } ],
+            "url": "{{baseUrl}}/api/pedidos/{{pedidoId}}"
           },
           "response": []
         },
         {
-          "name": "Eliminar Variante",
+          "name": "400 - XSS bloqueado al crear un producto",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Sin el @Pattern de ProductoRequestDTO el script quedaria guardado en la base",
+                  "// y volveria en cada GET del catalogo (XSS almacenado).",
+                  "pm.test('Status 400', function () { pm.response.to.have.status(400); });",
+                  "pm.test('El detalle explica el motivo', function () {",
+                  "    pm.expect(pm.response.json().detalles.join(' ')).to.include('<');",
+                  "});"
+                ]
+              }
+            }
+          ],
           "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": "{{baseUrl}}/productos/{{productoId}}/variantes/{{varianteId}}"
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"<script>alert('xss')</script>\",\n  \"descripcion\": \"<img src=x onerror=alert(1)>\",\n  \"precio\": 100,\n  \"marca\": \"UADE Wear\",\n  \"categoriaId\": {{categoriaId}}\n}"
+            },
+            "url": "{{baseUrl}}/api/productos"
           },
+          "response": []
+        },
+        {
+          "name": "400 - XSS bloqueado en la direccion de envio",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [ "pm.test('Status 400', function () { pm.response.to.have.status(400); });" ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{tokenCliente}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"metodoPago\": \"TARJETA\",\n  \"direccionEnvio\": \"<script>document.cookie</script>\"\n}"
+            },
+            "url": "{{baseUrl}}/api/pedidos"
+          },
+          "response": []
+        },
+        {
+          "name": "Cabeceras de seguridad en la respuesta",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Content-Security-Policy', function () {",
+                  "    pm.response.to.have.header('Content-Security-Policy');",
+                  "});",
+                  "pm.test('X-Content-Type-Options: nosniff', function () {",
+                  "    pm.expect(pm.response.headers.get('X-Content-Type-Options')).to.eql('nosniff');",
+                  "});",
+                  "pm.test('X-Frame-Options: DENY', function () {",
+                  "    pm.expect(pm.response.headers.get('X-Frame-Options')).to.eql('DENY');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/productos" },
           "response": []
         }
       ]
     },
     {
-      "name": "Casos de error",
+      "name": "6 - Casos de error de negocio",
+      "description": "Errores de dominio, no de seguridad. Todos responden con el formato ApiError del GlobalExceptionHandler.",
       "item": [
         {
           "name": "404 - Producto inexistente",
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/productos/999999" },
+          "response": []
+        },
+        {
+          "name": "404 - Ruta inexistente",
           "request": {
             "method": "GET",
-            "header": [],
-            "url": "{{baseUrl}}/productos/999999"
+            "header": [ { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" } ],
+            "url": "{{baseUrl}}/api/noexiste"
           },
           "response": []
         },
@@ -196,9 +806,46 @@
           "name": "400 - Producto invalido (body vacio)",
           "request": {
             "method": "POST",
-            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }
+            ],
             "body": { "mode": "raw", "raw": "{}" },
-            "url": "{{baseUrl}}/productos"
+            "url": "{{baseUrl}}/api/productos"
+          },
+          "response": []
+        },
+        {
+          "name": "400 - Id con formato invalido",
+          "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/productos/abc" },
+          "response": []
+        },
+        {
+          "name": "400 - Estado de pedido inexistente",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"estadoPedido\": \"INVENTADO\"\n}" },
+            "url": "{{baseUrl}}/api/pedidos/{{pedidoId}}/estado"
+          },
+          "response": []
+        },
+        {
+          "name": "409 - Carrito vacio al confirmar compra",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{tokenCliente2}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"metodoPago\": \"EFECTIVO\",\n  \"direccionEnvio\": \"Sin direccion\"\n}"
+            },
+            "url": "{{baseUrl}}/api/pedidos"
           },
           "response": []
         },
@@ -206,8 +853,18 @@
           "name": "409 - Eliminar categoria en uso",
           "request": {
             "method": "DELETE",
-            "header": [],
-            "url": "{{baseUrl}}/categorias/{{categoriaId}}"
+            "header": [ { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" } ],
+            "url": "{{baseUrl}}/api/categorias/{{categoriaId}}"
+          },
+          "response": []
+        },
+        {
+          "name": "409 - Eliminar usuario con pedidos",
+          "request": {
+            "method": "DELETE",
+            "header": [ { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" } ],
+            "url": "{{baseUrl}}/usuarios/1",
+            "description": "Reemplazar el 1 por el id del cliente que hizo la compra (sale de Ver mi Perfil)."
           },
           "response": []
         }
