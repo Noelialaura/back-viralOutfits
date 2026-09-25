@@ -1,6 +1,7 @@
 package com.uade.e_commerce.controller;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -9,7 +10,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.uade.e_commerce.DTO.Carrito.CarritoItemUpdateDTO;
@@ -32,32 +32,36 @@ public class CarritoController {
     }
 
     @GetMapping
-    public CarritoResponseDTO obtenerCarrito(@AuthenticationPrincipal UsuarioDetails usuarioDetails) {
-        return carritoService.obtenerCarritoPorUsuario(UsuarioAutenticado.obtenerId(usuarioDetails));
+    public ResponseEntity<CarritoResponseDTO> obtenerCarrito(@AuthenticationPrincipal UsuarioDetails usuarioDetails) {
+        CarritoResponseDTO carrito = carritoService.obtenerCarritoPorUsuario(UsuarioAutenticado.obtenerId(usuarioDetails));
+        return ResponseEntity.ok(carrito);
     }
 
     @PostMapping("/items")
-    @ResponseStatus(HttpStatus.CREATED)
-    public CarritoResponseDTO agregarItem(@AuthenticationPrincipal UsuarioDetails usuarioDetails,
+    public ResponseEntity<CarritoResponseDTO> agregarItem(@AuthenticationPrincipal UsuarioDetails usuarioDetails,
             @Valid @RequestBody CarritoItemRequestDTO dto) {
-        return carritoService.agregarItem(UsuarioAutenticado.obtenerId(usuarioDetails), dto);
+        CarritoResponseDTO carrito = carritoService.agregarItem(UsuarioAutenticado.obtenerId(usuarioDetails), dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(carrito);
     }
 
     @PutMapping("/items/{itemId}")
-    public CarritoResponseDTO actualizarCantidad(@AuthenticationPrincipal UsuarioDetails usuarioDetails,
+    public ResponseEntity<CarritoResponseDTO> actualizarCantidad(@AuthenticationPrincipal UsuarioDetails usuarioDetails,
             @PathVariable Long itemId,
             @Valid @RequestBody CarritoItemUpdateDTO dto) {
-        return carritoService.actualizarCantidadItem(UsuarioAutenticado.obtenerId(usuarioDetails), itemId, dto);
+        CarritoResponseDTO carrito = carritoService.actualizarCantidadItem(UsuarioAutenticado.obtenerId(usuarioDetails), itemId, dto);
+        return ResponseEntity.ok(carrito);
     }
 
     @DeleteMapping("/items/{itemId}")
-    public CarritoResponseDTO eliminarItem(@AuthenticationPrincipal UsuarioDetails usuarioDetails,
+    public ResponseEntity<CarritoResponseDTO> eliminarItem(@AuthenticationPrincipal UsuarioDetails usuarioDetails,
             @PathVariable Long itemId) {
-        return carritoService.eliminarItem(UsuarioAutenticado.obtenerId(usuarioDetails), itemId);
+        CarritoResponseDTO carrito = carritoService.eliminarItem(UsuarioAutenticado.obtenerId(usuarioDetails), itemId);
+        return ResponseEntity.ok(carrito);
     }
 
     @DeleteMapping
-    public CarritoResponseDTO vaciarCarrito(@AuthenticationPrincipal UsuarioDetails usuarioDetails) {
-        return carritoService.vaciarCarrito(UsuarioAutenticado.obtenerId(usuarioDetails));
+    public ResponseEntity<CarritoResponseDTO> vaciarCarrito(@AuthenticationPrincipal UsuarioDetails usuarioDetails) {
+        CarritoResponseDTO carrito = carritoService.vaciarCarrito(UsuarioAutenticado.obtenerId(usuarioDetails));
+        return ResponseEntity.ok(carrito);
     }
 }
