@@ -3,6 +3,7 @@ package com.uade.e_commerce.controller;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -10,7 +11,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.uade.e_commerce.DTO.Categoria.CategoriaRequestDTO;
@@ -30,30 +30,33 @@ public class CategoriaController {
     }
 
     @GetMapping
-    public List<CategoriaResponseDTO> getAllCategorias() {
-        return categoriaService.getAllCategorias();
+    public ResponseEntity<List<CategoriaResponseDTO>> getAllCategorias() {
+        List<CategoriaResponseDTO> categorias = categoriaService.getAllCategorias();
+        return ResponseEntity.ok(categorias);
     }
 
     @GetMapping("/{id}")
-    public CategoriaResponseDTO getCategoriaById(@PathVariable Long id) {
-        return categoriaService.getCategoria(id);
+    public ResponseEntity<CategoriaResponseDTO> getCategoriaById(@PathVariable Long id) {
+        CategoriaResponseDTO categoria = categoriaService.getCategoria(id);
+        return ResponseEntity.ok(categoria);
     }
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public CategoriaResponseDTO crearCategoria(@Valid @RequestBody CategoriaRequestDTO categoria) {
-        return categoriaService.crearCategoria(categoria);
+    public ResponseEntity<CategoriaResponseDTO> crearCategoria(@Valid @RequestBody CategoriaRequestDTO categoria) {
+        CategoriaResponseDTO creada = categoriaService.crearCategoria(categoria);
+        return ResponseEntity.status(HttpStatus.CREATED).body(creada);
     }
 
     @PutMapping("/{id}")
-    public CategoriaResponseDTO actualizarCategoria(@PathVariable Long id,
+    public ResponseEntity<CategoriaResponseDTO> actualizarCategoria(@PathVariable Long id,
             @Valid @RequestBody CategoriaRequestDTO categoria) {
-        return categoriaService.actualizarCategoria(id, categoria);
+        CategoriaResponseDTO actualizada = categoriaService.actualizarCategoria(id, categoria);
+        return ResponseEntity.ok(actualizada);
     }
 
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void eliminarCategoria(@PathVariable Long id) {
+    public ResponseEntity<Void> eliminarCategoria(@PathVariable Long id) {
         categoriaService.eliminarCategoria(id);
+        return ResponseEntity.noContent().build();
     }
 }
