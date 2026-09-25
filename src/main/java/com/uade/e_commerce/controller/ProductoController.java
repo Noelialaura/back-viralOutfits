@@ -33,7 +33,7 @@ public class ProductoController {
     @GetMapping
     public ResponseEntity<List<ProductoResponseDTO>> getProductos(@RequestParam(required = false) Long categoriaId) {
         List<ProductoResponseDTO> productos = productoService.getProductos(categoriaId);
-        return ResponseEntity.ok(productos);
+        return ResponseEntity.status(HttpStatus.OK).body(productos);
     }
 
     @PostMapping
@@ -45,20 +45,20 @@ public class ProductoController {
     @GetMapping("/{id}")
     public ResponseEntity<ProductoResponseDTO> getProductoById(@PathVariable Long id) {
         ProductoResponseDTO producto = productoService.getProducto(id);
-        return ResponseEntity.ok(producto);
+        return ResponseEntity.status(HttpStatus.OK).body(producto);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ProductoResponseDTO> actualizarProducto(@PathVariable Long id,
             @Valid @RequestBody ProductoRequestDTO producto) {
         ProductoResponseDTO actualizado = productoService.actualizarProducto(id, producto);
-        return ResponseEntity.ok(actualizado);
+        return ResponseEntity.status(HttpStatus.OK).body(actualizado);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarProducto(@PathVariable Long id) {
         productoService.eliminarProducto(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
 }
