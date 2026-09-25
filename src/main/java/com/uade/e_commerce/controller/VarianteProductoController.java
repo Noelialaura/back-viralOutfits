@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.http.ResponseEntity;
 import com.uade.e_commerce.DTO.VarianteProducto.VarianteProductoRequestDTO;
 import com.uade.e_commerce.DTO.VarianteProducto.VarianteProductoResponseDTO;
 import com.uade.e_commerce.DTO.VarianteProducto.VarianteStockRequestDTO;
@@ -31,40 +31,49 @@ public class VarianteProductoController {
     }
 
     @GetMapping
-    public List<VarianteProductoResponseDTO> getVariantes(@PathVariable Long productoId) {
-        return varianteProductoService.getVariantesDeProducto(productoId);
+    public ResponseEntity<List<VarianteProductoResponseDTO>> getVariantes(@PathVariable Long productoId) {
+        return ResponseEntity.status(HttpStatus.OK).body(varianteProductoService.getVariantesDeProducto(productoId));
     }
 
     @GetMapping("/{varianteId}")
-    public VarianteProductoResponseDTO getVariante(@PathVariable Long productoId,
+    public ResponseEntity<VarianteProductoResponseDTO> getVariante(@PathVariable Long productoId,
             @PathVariable Long varianteId) {
-        return varianteProductoService.getVariante(productoId, varianteId);
+        return ResponseEntity.status(HttpStatus.OK).body(varianteProductoService.getVariante(productoId, varianteId));
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public VarianteProductoResponseDTO agregarVariante(@PathVariable Long productoId,
+    public ResponseEntity<VarianteProductoResponseDTO> agregarVariante(@PathVariable Long productoId,
             @Valid @RequestBody VarianteProductoRequestDTO variante) {
-        return varianteProductoService.agregarVariante(productoId, variante);
+        return ResponseEntity.status(HttpStatus.CREATED).body(varianteProductoService.agregarVariante(productoId, variante));
     }
 
     @PutMapping("/{varianteId}")
-    public VarianteProductoResponseDTO actualizarVariante(@PathVariable Long productoId,
-            @PathVariable Long varianteId,
-            @Valid @RequestBody VarianteProductoRequestDTO variante) {
-        return varianteProductoService.actualizarVariante(productoId, varianteId, variante);
-    }
+    public ResponseEntity<VarianteProductoResponseDTO> actualizarVariante(
+        @PathVariable Long productoId,
+        @PathVariable Long varianteId,
+        @Valid @RequestBody VarianteProductoRequestDTO variante) {
+
+        VarianteProductoResponseDTO actualizada = varianteProductoService.actualizarVariante(productoId, varianteId, variante);
+
+        return ResponseEntity.status(HttpStatus.OK).body(actualizada);
+}
 
     @PutMapping("/{varianteId}/stock")
-    public VarianteProductoResponseDTO actualizarStock(@PathVariable Long productoId,
-            @PathVariable Long varianteId,
-            @Valid @RequestBody VarianteStockRequestDTO stock) {
-        return varianteProductoService.actualizarStock(productoId, varianteId, stock);
-    }
+    public ResponseEntity<VarianteProductoResponseDTO> actualizarStock(
+        @PathVariable Long productoId,
+        @PathVariable Long varianteId,
+        @Valid @RequestBody VarianteStockRequestDTO stock) {
+
+        VarianteProductoResponseDTO actualizada = varianteProductoService.actualizarStock(productoId, varianteId, stock);
+
+            return ResponseEntity.status(HttpStatus.OK).body(actualizada);
+}
 
     @DeleteMapping("/{varianteId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void eliminarVariante(@PathVariable Long productoId, @PathVariable Long varianteId) {
+    public ResponseEntity<Void> eliminarVariante(@PathVariable Long productoId, @PathVariable Long varianteId) {
         varianteProductoService.eliminarVariante(productoId, varianteId);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

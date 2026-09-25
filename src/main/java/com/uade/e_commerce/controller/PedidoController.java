@@ -3,6 +3,7 @@ package com.uade.e_commerce.controller;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,48 +37,55 @@ public class PedidoController {
 	}
 
 	@PostMapping
-	@ResponseStatus(HttpStatus.CREATED)
-	public PedidoResponseDTO crearPedido(@AuthenticationPrincipal UsuarioDetails usuarioDetails,
-			@Valid @RequestBody PedidoRequestDTO pedidoRequest) {
-		return pedidoService.crearPedido(UsuarioAutenticado.obtenerId(usuarioDetails), pedidoRequest);
-	}
+	public ResponseEntity<PedidoResponseDTO> crearPedido(
+        @AuthenticationPrincipal UsuarioDetails usuarioDetails,
+        @Valid @RequestBody PedidoRequestDTO pedidoRequest) {
+
+    	PedidoResponseDTO nuevoPedido = pedidoService.crearPedido(
+            UsuarioAutenticado.obtenerId(usuarioDetails), 
+            pedidoRequest
+    );
+
+    	return ResponseEntity.status(HttpStatus.CREATED).body(nuevoPedido);
+}
 
 	// Con ?estado=PENDIENTE el ADMIN filtra el listado por estado.
 	// http://localhost:8080/api/pedidos?estado=PENDIENTE
 	@GetMapping
-	public List<PedidoResponseDTO> getPedidos(@RequestParam(required = false) EstadoPedido estado) {
-		return pedidoService.getPedidos(estado);
+	public ResponseEntity<List<PedidoResponseDTO>> getPedidos(@RequestParam(required = false) EstadoPedido estado) {
+		return ResponseEntity.status(HttpStatus.OK).body(pedidoService.getPedidos(estado));
 	}
 
 	@GetMapping("/mis-pedidos")
-	public List<PedidoResponseDTO> getMisPedidos(@AuthenticationPrincipal UsuarioDetails usuarioDetails) {
-		return pedidoService.getPedidosByUsuario(UsuarioAutenticado.obtenerId(usuarioDetails));
+	public ResponseEntity<List<PedidoResponseDTO>> getMisPedidos(@AuthenticationPrincipal UsuarioDetails usuarioDetails) {
+		return ResponseEntity.status(HttpStatus.OK).body(pedidoService.getPedidosByUsuario(UsuarioAutenticado.obtenerId(usuarioDetails)));
 	}
 
 	// El ADMIN consulta cualquier pedido; el CLIENTE solamente los suyos.
 	@GetMapping("/{id}")
-	public PedidoResponseDTO getPedido(@AuthenticationPrincipal UsuarioDetails usuarioDetails,
+	public ResponseEntity<PedidoResponseDTO> getPedido(@AuthenticationPrincipal UsuarioDetails usuarioDetails,
 			@PathVariable Long id) {
-		return pedidoService.getPedido(id, UsuarioAutenticado.obtenerId(usuarioDetails),
-				UsuarioAutenticado.esAdmin(usuarioDetails));
+		return ResponseEntity.status(HttpStatus.OK).body(pedidoService.getPedido(id, UsuarioAutenticado.obtenerId(usuarioDetails),
+				UsuarioAutenticado.esAdmin(usuarioDetails)));
 	}
 
 	@GetMapping("/usuario/{usuarioId}")
-	public List<PedidoResponseDTO> getPedidosByUsuario(@PathVariable Long usuarioId) {
-		return pedidoService.getPedidosByUsuario(usuarioId);
+	public ResponseEntity<List<PedidoResponseDTO>> getPedidosByUsuario(@PathVariable Long usuarioId) {
+		return ResponseEntity.status(HttpStatus.OK).body(pedidoService.getPedidosByUsuario(usuarioId));
 	}
 
 	@PutMapping("/{id}/estado")
 	@ResponseStatus(HttpStatus.OK)
-	public PedidoResponseDTO actualizarEstado(
+	public ResponseEntity<PedidoResponseDTO> actualizarEstado(
 			@PathVariable Long id,
 			@Valid @RequestBody EstadoPedidoRequestDTO pedidoRequest) {
-		return pedidoService.actualizarEstado(id, pedidoRequest);
+		return ResponseEntity.status(HttpStatus.OK).body(pedidoService.actualizarEstado(id, pedidoRequest));
 	}
 
 	@DeleteMapping("/{id}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void eliminarPedido(@PathVariable Long id) {
+	public ResponseEntity<Void> eliminarPedido(@PathVariable Long id) {
 		pedidoService.eliminarPedido(id);
+		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 	}
 }

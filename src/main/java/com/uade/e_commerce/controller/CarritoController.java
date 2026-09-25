@@ -34,7 +34,7 @@ public class CarritoController {
     @GetMapping
     public ResponseEntity<CarritoResponseDTO> obtenerCarrito(@AuthenticationPrincipal UsuarioDetails usuarioDetails) {
         CarritoResponseDTO carrito = carritoService.obtenerCarritoPorUsuario(UsuarioAutenticado.obtenerId(usuarioDetails));
-        return ResponseEntity.ok(carrito);
+        return ResponseEntity.status(HttpStatus.OK).body(carrito);
     }
 
     @PostMapping("/items")
@@ -49,19 +49,19 @@ public class CarritoController {
             @PathVariable Long itemId,
             @Valid @RequestBody CarritoItemUpdateDTO dto) {
         CarritoResponseDTO carrito = carritoService.actualizarCantidadItem(UsuarioAutenticado.obtenerId(usuarioDetails), itemId, dto);
-        return ResponseEntity.ok(carrito);
+        return ResponseEntity.status(HttpStatus.OK).body(carrito);
     }
 
     @DeleteMapping("/items/{itemId}")
     public ResponseEntity<CarritoResponseDTO> eliminarItem(@AuthenticationPrincipal UsuarioDetails usuarioDetails,
             @PathVariable Long itemId) {
         CarritoResponseDTO carrito = carritoService.eliminarItem(UsuarioAutenticado.obtenerId(usuarioDetails), itemId);
-        return ResponseEntity.ok(carrito);
+        return ResponseEntity.status(HttpStatus.OK).body(carrito);
     }
 
     @DeleteMapping
     public ResponseEntity<CarritoResponseDTO> vaciarCarrito(@AuthenticationPrincipal UsuarioDetails usuarioDetails) {
         CarritoResponseDTO carrito = carritoService.vaciarCarrito(UsuarioAutenticado.obtenerId(usuarioDetails));
-        return ResponseEntity.ok(carrito);
+        return ResponseEntity.status(HttpStatus.OK).body(carrito);
     }
 }

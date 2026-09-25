@@ -33,31 +33,32 @@ public class UsuarioController {
     }
 
     @GetMapping
-    public List<UsuarioResponseDTO> listarUsuarios() {
-        return usuarioService.listarUsuarios();
+    public ResponseEntity<List<UsuarioResponseDTO>> listarUsuarios() {
+        return ResponseEntity.status(HttpStatus.OK).body(usuarioService.listarUsuarios());
     }
 
     @GetMapping("/me")
     public ResponseEntity<UsuarioResponseDTO> perfilPropio(@AuthenticationPrincipal UsuarioDetails usuarioDetails) {
         Long usuarioId = UsuarioAutenticado.obtenerId(usuarioDetails);
-        return ResponseEntity.ok(usuarioService.buscarPorId(usuarioId));
+        return ResponseEntity.status(HttpStatus.OK).body(usuarioService.buscarPorId(usuarioId));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<UsuarioResponseDTO> buscarPorId(@PathVariable Long id) {
         UsuarioResponseDTO usuario = usuarioService.buscarPorId(id);
-        return ResponseEntity.ok(usuario);
+        return ResponseEntity.status(HttpStatus.OK).body(usuario);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<UsuarioResponseDTO> actualizar(@PathVariable Long id,
             @Valid @RequestBody UsuarioUpdateDTO usuario) {
-        return ResponseEntity.ok(usuarioService.actualizar(id, usuario));
+        return ResponseEntity.status(HttpStatus.OK).body(usuarioService.actualizar(id, usuario));
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void eliminar(@PathVariable Long id) {
+    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         usuarioService.eliminar(id);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }
