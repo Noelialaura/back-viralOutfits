@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.ResponseEntity;
 import com.uade.e_commerce.DTO.VarianteProducto.VarianteProductoRequestDTO;
@@ -42,7 +41,6 @@ public class VarianteProductoController {
     }
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<VarianteProductoResponseDTO> agregarVariante(@PathVariable Long productoId,
             @Valid @RequestBody VarianteProductoRequestDTO variante) {
         return ResponseEntity.status(HttpStatus.CREATED).body(varianteProductoService.agregarVariante(productoId, variante));
@@ -71,7 +69,6 @@ public class VarianteProductoController {
 }
 
     @DeleteMapping("/{varianteId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<Void> eliminarVariante(@PathVariable Long productoId, @PathVariable Long varianteId) {
         varianteProductoService.eliminarVariante(productoId, varianteId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
