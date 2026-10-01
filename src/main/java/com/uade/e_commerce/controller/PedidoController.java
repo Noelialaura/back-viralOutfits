@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.uade.e_commerce.DTO.Pedido.EstadoPedidoRequestDTO;
@@ -75,7 +74,6 @@ public class PedidoController {
 	}
 
 	@PutMapping("/{id}/estado")
-	@ResponseStatus(HttpStatus.OK)
 	public ResponseEntity<PedidoResponseDTO> actualizarEstado(
 			@PathVariable Long id,
 			@Valid @RequestBody EstadoPedidoRequestDTO pedidoRequest) {
@@ -83,7 +81,6 @@ public class PedidoController {
 	}
 
 	@DeleteMapping("/{id}")
-	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public ResponseEntity<Void> eliminarPedido(@PathVariable Long id) {
 		pedidoService.eliminarPedido(id);
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();

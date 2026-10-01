@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.uade.e_commerce.DTO.Usuario.UsuarioResponseDTO;
@@ -56,7 +55,6 @@ public class UsuarioController {
     }
 
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         usuarioService.eliminar(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
