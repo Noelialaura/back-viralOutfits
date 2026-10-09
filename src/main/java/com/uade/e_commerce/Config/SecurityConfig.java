@@ -46,6 +46,7 @@ public class SecurityConfig {
 
             // 3. Reglas de autorización de endpoints
             .authorizeHttpRequests(auth -> auth
+
                 // Rutas públicas: registro, login y el dispatch interno de errores
                 .requestMatchers("/auth/**", "/error").permitAll()
 
@@ -67,13 +68,107 @@ public class SecurityConfig {
             )
 
             // 4. Manejo de excepciones de seguridad (401 Unauthorized y 403 Forbidden en formato JSON)
+    
+                // PÚBLICOS
+                .requestMatchers("/auth/registro", "/auth/login")
+                    .permitAll()
+
+                // PRODUCTOS
+
+                .requestMatchers(HttpMethod.GET, "/api/productos/**")
+                    .permitAll()
+
+                .requestMatchers(HttpMethod.POST, "/api/productos/**")
+                    .hasRole("ADMIN")
+
+                .requestMatchers(HttpMethod.PUT, "/api/productos/**")
+                    .hasRole("ADMIN")
+
+                .requestMatchers(HttpMethod.DELETE, "/api/productos/**")
+                    .hasRole("ADMIN")
+
+                // CATEGORÍAS
+
+                .requestMatchers(HttpMethod.GET, "/api/categorias/**")
+                    .permitAll()
+
+                .requestMatchers(HttpMethod.POST, "/api/categorias/**")
+                    .hasRole("ADMIN")
+
+                .requestMatchers(HttpMethod.PUT, "/api/categorias/**")
+                    .hasRole("ADMIN")
+
+                .requestMatchers(HttpMethod.DELETE, "/api/categorias/**")
+                    .hasRole("ADMIN")
+
+                // VARIANTES
+                // No necesitan reglas propias: /api/productos/** ya las cubre con el mismo
+                // criterio (GET publico, alta/modificacion/baja solo ADMIN).
+
+                // CARRITO
+
+                // El carrito es del comprador: el ADMIN administra, no compra.
+                .requestMatchers("/api/carrito/**")
+                    .hasRole("CLIENTE")
+
+                // PEDIDOS
+
+                // El checkout toma los items del carrito, asi que tambien es solo del CLIENTE.
+                .requestMatchers(HttpMethod.POST, "/api/pedidos")
+                    .hasRole("CLIENTE")
+
+                // El cliente consulta el listado de sus pedidos mediante este endpoint.
+                .requestMatchers(HttpMethod.GET, "/api/pedidos/mis-pedidos")
+                    .hasRole("CLIENTE")
+
+                // Detalle de un pedido. Va despues de /mis-pedidos porque el patron de un
+                // segmento tambien lo matchearia. El CLIENTE entra aca, pero PedidoService
+                // valida que el pedido sea suyo antes de devolverlo.
+                .requestMatchers(HttpMethod.GET, "/api/pedidos/*")
+                    .hasAnyRole("CLIENTE", "ADMIN")
+
+                // Listado completo, pedidos de otro usuario, cambio de estado y eliminacion:
+                // solo ADMIN.
+                .requestMatchers("/api/pedidos/**")
+                    .hasRole("ADMIN")
+
+                // USUARIOS
+
+                // Cada usuario autenticado puede consultar su propio perfil.
+                .requestMatchers(HttpMethod.GET, "/usuarios/me")
+                    .hasAnyRole("CLIENTE", "ADMIN")
+
+                // Listado, consulta por ID, modificacion y eliminacion: solo ADMIN.
+                .requestMatchers("/usuarios/**")
+                    .hasRole("ADMIN")
+
+                // RESTO:  Cualquier otro endpoint requiere autenticación
+                .anyRequest().authenticated()
+        
+            // Cabeceras de seguridad. Spring Security ya envia X-Content-Type-Options: nosniff
+            // y X-Frame-Options: DENY por defecto; la CSP se declara para que un navegador no
+            // ejecute nada si alguna respuesta llegara a interpretarse como HTML.
+            .headers(headers -> headers
+                .contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'none'; frame-ancestors 'none'"))
+            )
+
+            // Manejo de errores de seguridad
+
             .exceptionHandling(ex -> ex
                 .authenticationEntryPoint(jwtAuthenticationEntryPoint)
                 .accessDeniedHandler(restAccessDeniedHandler)
             )
 
+
             // 5. Inserción del filtro JWT antes del filtro estándar de usuario y contraseña
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+
+            // Filtro JWT antes del filtro estándar de autenticación
+            .addFilterBefore(
+                jwtAuthenticationFilter,
+                UsernamePasswordAuthenticationFilter.class
+            )
+
 
             .build();
     }

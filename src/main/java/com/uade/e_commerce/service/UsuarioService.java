@@ -1,7 +1,9 @@
 package com.uade.e_commerce.service;
 
 import java.util.List;
-
+import org.springframework.security.core.Authentication;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.uade.e_commerce.DTO.Usuario.UsuarioResponseDTO;
@@ -32,10 +34,24 @@ public class UsuarioService {
 
     public UsuarioResponseDTO buscarPorId(Long id) {
 
-        Usuario usuario = buscarEntidadPorId(id);
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() ->
+                    new ResourceNotFoundException(
+                        "Usuario no encontrado con id: " + id
+                    )
+                );
 
-        return convertirAResponseDTO(usuario);
-    }
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String emailAutenticado = authentication.getName();
+        boolean esAdmin = authentication.getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
+        // Si no es ADMIN, solamente puede consultar su propio usuario
+        if (!esAdmin && !usuario.getEmail().equals(emailAutenticado)) {
+            throw new AccessDeniedException("No tiene permiso para consultar este usuario");
+        }
+
+    return convertirAResponseDTO(usuario);
+}
 
     public UsuarioResponseDTO actualizar(Long id, UsuarioUpdateDTO dto) {
         Usuario usuario = buscarEntidadPorId(id);

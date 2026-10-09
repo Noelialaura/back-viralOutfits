@@ -3,6 +3,7 @@ package com.uade.e_commerce.service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import com.uade.e_commerce.DTO.Pedido.EstadoPedidoRequestDTO;
@@ -103,8 +104,16 @@ public class PedidoService {
 				.toList();
 	}
 
-	public PedidoResponseDTO getPedido(Long id) {
-		return toResponseDTO(buscarPorId(id));
+	public PedidoResponseDTO getPedido(Long id, Long usuarioId, boolean esAdmin) {
+		Pedido pedido = buscarPorId(id);
+
+		// Abrir la URL al CLIENTE no alcanza: sin este chequeo podria leer el pedido de
+		// otro usuario simplemente probando ids.
+		if (!esAdmin && !pedido.getUsuario().getId().equals(usuarioId)) {
+			throw new AccessDeniedException("No tiene permiso para consultar este pedido");
+		}
+
+		return toResponseDTO(pedido);
 	}
 
 	public List<PedidoResponseDTO> getPedidosByUsuario(Long usuarioId) {

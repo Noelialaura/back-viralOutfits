@@ -3,14 +3,13 @@ package com.uade.e_commerce.security;
 import com.uade.e_commerce.exception.InvalidCredentialsException;
 
 /**
- * Los endpoints de /api/** siguen abiertos en SecurityConfig para poder probar el
- * catalogo con Postman sin token. Como consecuencia, en los endpoints que si
- * necesitan saber quien es el usuario (carrito y pedidos) el principal llega en
- * null cuando no se manda el header Authorization.
+ * Helpers para leer el usuario que viene en el token, sin que los controllers tengan
+ * que manipular el SecurityContext a mano.
  *
- * Este helper centraliza esa validacion y lanza InvalidCredentialsException, que
- * el GlobalExceptionHandler ya traduce a un 401 con el mismo formato JSON que el
- * resto de los errores de la API.
+ * SecurityConfig ya exige token en carrito, pedidos y usuarios, asi que el principal
+ * normalmente no llega en null. La validacion de obtenerId() queda igual como red de
+ * seguridad: lanza InvalidCredentialsException, que el GlobalExceptionHandler traduce
+ * a un 401 con el mismo formato JSON que el resto de los errores de la API.
  */
 public final class UsuarioAutenticado {
 
@@ -22,5 +21,10 @@ public final class UsuarioAutenticado {
             throw new InvalidCredentialsException("Debe iniciar sesion para realizar esta operacion");
         }
         return usuarioDetails.getId();
+    }
+
+    public static boolean esAdmin(UsuarioDetails usuarioDetails) {
+        return usuarioDetails != null && usuarioDetails.getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
     }
 }
