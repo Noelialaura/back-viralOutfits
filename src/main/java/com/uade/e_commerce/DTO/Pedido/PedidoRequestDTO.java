@@ -1,6 +1,7 @@
 package com.uade.e_commerce.DTO.Pedido;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,8 +16,10 @@ import lombok.NoArgsConstructor;
 public class PedidoRequestDTO {
 
     @NotBlank(message = "El metodo de pago es obligatorio")
+    @Pattern(regexp = "[^<>]*", message = "El metodo de pago no puede contener los caracteres < o >")
     private String metodoPago;
 
     @NotBlank(message = "La direccion de envio es obligatoria")
+    @Pattern(regexp = "[^<>]*", message = "La direccion de envio no puede contener los caracteres < o >")
     private String direccionEnvio;
 }

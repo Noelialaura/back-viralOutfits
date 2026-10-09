@@ -62,10 +62,13 @@ public class AuthService {
 
     public LoginResponseDTO login(LoginRequestDTO dto) {
 
-        Usuario usuario = usuarioRepository.findByEmail(dto.getEmail()).orElseThrow(() -> new ArgumentInvalidException( "Email o contraseña incorrectos"));
+        // Email inexistente y contraseña incorrecta devuelven el mismo 401 con el mismo
+        // mensaje: si el email inexistente diera otro codigo, cualquiera podria averiguar
+        // que cuentas estan registradas probando emails contra el login.
+        Usuario usuario = usuarioRepository.findByEmail(dto.getEmail())
+                .orElseThrow(() -> new InvalidCredentialsException("Email o contraseña incorrectos"));
 
-       if (!contrasenaEncoder.matches(dto.getContrasena(), usuario.getContrasena())) {
-
+        if (!contrasenaEncoder.matches(dto.getContrasena(), usuario.getContrasena())) {
             throw new InvalidCredentialsException("Email o contraseña incorrectos");
         }
 
